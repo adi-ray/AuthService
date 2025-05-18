@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 
 const UserRepository = require("../repository/user-repository");
 const { JWT_KEY } = require("../config/serverConfig");
+const e = require("express");
 
 class UserService {
   constructor() {
@@ -15,6 +16,26 @@ class UserService {
       return user;
     } catch (error) {
       console.log("Something went wrong in service layer");
+      throw error;
+    }
+  }
+
+  async signIn(email, plainPassword) {
+    try {
+      // step 1: fetch the user using email
+      const user = await this.userRepository.getByEmail(email);
+      // step 2: compare incoming plain password with the stored encrypted password
+      const passwordMatch = this.checkPassword(plainPassword, user.password);
+
+      if (!passwordMatch) {
+        console.log("Password doesn't match");
+        throw { error: "Password is incorrect" };
+      }
+      // step 3: if password matches, create a token and send it to the user
+      const newJWT = this.createToken({ email: user.email, id: user.id });
+      return newJWT;
+    } catch (error) {
+      console.log("Something went wrong in sign in process");
       throw error;
     }
   }
