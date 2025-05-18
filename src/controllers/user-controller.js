@@ -1,6 +1,6 @@
 const UserService = require("../services/user-service");
 
-const userService = new userService();
+const userService = new UserService();
 
 const create = async (req, res) => {
   try {
@@ -48,4 +48,29 @@ const signIn = async (req, res) => {
   }
 };
 
-module.exports = { create, signIn };
+const isAuthenticated = async (req, res) => {
+  try {
+    const token = req.headers["x-access-token"];
+    const response = await userService.isAuthenticated(token);
+    return res.status(200).json({
+      success: true,
+      message: "User is authenticated",
+      data: response,
+      err: {},
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      err: error,
+      data: {},
+    });
+  }
+};
+
+module.exports = {
+  create,
+  signIn,
+  isAuthenticated,
+};
